@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CalTrack">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#ffffff">
+<title>CalTrack</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="icon" href="/icon-180.png">
+<style>
+:root {
+  --bg:#f4f4f6; --card:#ffffff; --text:#111114; --muted:#6c6c75; --line:#e4e4e8;
+  --accent:#111114; --on-accent:#ffffff; --red:#e5484d; --orange:#f08c1a; --blue:#3b82f6; --green:#2fa65a;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#0c0c0e; --card:#18181c; --text:#f2f2f5; --muted:#9a9aa5; --line:#2b2b31;
+    --accent:#f2f2f5; --on-accent:#111114; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#0c0c0e; --card:#18181c; --text:#f2f2f5; --muted:#9a9aa5; --line:#2b2b31;
+  --accent:#f2f2f5; --on-accent:#111114; color-scheme: dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+#app{max-width:520px;margin:0 auto;min-height:100%;padding:16px 16px calc(96px + env(safe-area-inset-bottom,0px))}
+h1{font-size:28px;margin:8px 0 16px;letter-spacing:-.5px}
+h2{font-size:17px;margin:20px 0 10px}
+.card{background:var(--card);border-radius:18px;padding:14px;margin-bottom:12px;border:1px solid var(--line)}
+.row{display:flex;align-items:center;gap:12px}
+.between{justify-content:space-between}
+.muted{color:var(--muted);font-size:13px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.btn{appearance:none;border:0;background:var(--accent);color:var(--on-accent);font-size:16px;font-weight:600;
+  padding:14px 16px;border-radius:14px;width:100%;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--red);border:1px solid var(--line)}
+.btn:disabled{opacity:.5}
+input,select,textarea{width:100%;font-size:16px;padding:12px;border-radius:12px;border:1px solid var(--line);
+  background:var(--bg);color:var(--text);font-family:inherit}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+.seg{display:flex;background:var(--bg);border-radius:12px;padding:3px;border:1px solid var(--line)}
+.seg button{flex:1;border:0;background:transparent;color:var(--text);padding:10px;border-radius:9px;font-size:15px;font-weight:600}
+.seg button.on{background:var(--accent);color:var(--on-accent)}
+.ring{position:relative;width:210px;height:210px;margin:6px auto 14px}
+.ring .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .big{font-size:46px;font-weight:800;letter-spacing:-1px}
+.bar{height:7px;background:var(--line);border-radius:5px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;border-radius:5px}
+.meal{display:flex;gap:12px;align-items:center}
+.thumb{width:60px;height:60px;border-radius:12px;background:var(--line);object-fit:cover;flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:26px}
+.meal .name{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meal .info{min-width:0;flex:1}
+.x{border:0;background:transparent;color:var(--muted);font-size:20px;padding:6px}
+.tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;
+  background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+.tabbar .inner{display:flex;width:100%;max-width:520px;justify-content:space-around}
+.tab{border:0;background:transparent;color:var(--muted);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 18px}
+.tab span{font-size:22px}
+.tab.on{color:var(--text);font-weight:700}
+.fab{position:fixed;right:18px;bottom:calc(78px + env(safe-area-inset-bottom,0px));width:60px;height:60px;border-radius:50%;
+  border:0;background:var(--accent);color:var(--on-accent);font-size:32px;box-shadow:0 6px 18px rgba(0,0,0,.28);z-index:5}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--card);width:100%;max-width:520px;max-height:92%;overflow-y:auto;border-radius:22px 22px 0 0;
+  padding:18px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+.pill{display:inline-flex;gap:6px;align-items:center;background:color-mix(in srgb,var(--orange) 16%,transparent);
+  color:var(--orange);padding:6px 12px;border-radius:99px;font-weight:700;font-size:14px}
+.err{color:var(--red);font-size:14px;margin:8px 0}
+.spin{display:inline-block;width:18px;height:18px;border:3px solid var(--line);border-top-color:var(--text);border-radius:50%;animation:s 1s linear infinite;vertical-align:middle}
+@keyframes s{to{transform:rotate(360deg)}}
+.chartwrap{overflow-x:auto}
+.preview{width:100%;max-height:240px;object-fit:cover;border-radius:14px;margin-bottom:6px}
+.plan{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.plan div{background:var(--bg);border-radius:12px;padding:10px}
+.plan b{display:block;font-size:20px}
+@media (prefers-reduced-motion: reduce){.spin{animation-duration:3s}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<input id="fileCam" type="file" accept="image/*" capture="environment" hidden>
+<input id="fileLib" type="file" accept="image/*" hidden>
+
+<script>
+// ---------- storage ----------
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+let state = {
+  profile: store.get('ct_profile', null),   // {isMale,age,height,weight,activity,goal,cal,p,c,f}
+  entries: store.get('ct_entries', []),
+  tab: 'today'
+};
+// IndexedDB mirror: if iOS clears localStorage, the data is restored from here
+const idb = {
+  open() { return new Promise((res, rej) => { const r = indexedDB.open('caltrack', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  async get(k) { try { const db = await this.open();
+    return await new Promise(res => { const q = db.transaction('kv').objectStore('kv').get(k);
+      q.onsuccess = () => res(q.result); q.onerror = () => res(undefined); }); } catch (e) { return undefined; } },
+  async set(k, v) { try { const db = await this.open(); db.transaction('kv', 'readwrite').objectStore('kv').put(v, k); } catch (e) {} }
+};
+const save = () => {
+  store.set('ct_profile', state.profile); store.set('ct_entries', state.entries);
+  idb.set('ct_all', { profile: state.profile, entries: state.entries });
+};
+// save again whenever the app is backgrounded or closed
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
+window.addEventListener('pagehide', save);
+// ask iOS not to evict this app's storage
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
+
+// ---------- helpers ----------
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dayKey = d => { d = new Date(d); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
+const todays = () => state.entries.filter(e => dayKey(e.ts) === dayKey(Date.now()));
+const sum = (arr, k) => arr.reduce((a, e) => a + (Number(e[k]) || 0), 0);
+const ACT = { low: ['Light (0–2 workouts/week)', 1.375], mid: ['Moderate (3–5 workouts/week)', 1.55], high: ['Very active (6+ workouts/week)', 1.725] };
+const GOAL = { lose: ['Lose weight', -500], maintain: ['Maintain', 0], gain: ['Gain muscle', 300] };
+
+function makePlan(p) {
+  const bmr = 10 * p.weight + 6.25 * p.height - 5 * p.age + (p.isMale ? 5 : -161);
+  const cal = Math.max(1200, Math.round(bmr * ACT[p.activity][1] + GOAL[p.goal][1]));
+  const protein = Math.round(p.weight * (p.goal === 'maintain' ? 1.6 : 1.9));
+  const fat = Math.round(cal * 0.25 / 9);
+  const carbs = Math.max(0, Math.round((cal - protein * 4 - fat * 9) / 4));
+  return { cal, p: protein, c: carbs, f: fat };
+}
+function streak() {
+  const days = new Set(state.entries.map(e => dayKey(e.ts)));
+  let d = new Date(); let n = 0;
+  if (!days.has(dayKey(d))) d.setDate(d.getDate() - 1);
+  while (days.has(dayKey(d))) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+function bar(val, goal, color) {
+  const pct = Math.min(100, goal ? (val / goal) * 100 : 0);
+  return `<div class="bar"><i style="width:${pct}%;background:${color}"></i></div>`;
+}
+
+// ---------- AI (calls this app's own /analyze endpoint) ----------
+const sample = true, imagesOK = true;
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {})); }
+
+function blobToBase64(blob) {
+  return new Promise((res, rej) => { const r = new FileReader();
+    r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(blob); });
+}
+async function callAnalyze(payload, retried) {
+  const resp = await fetch('/analyze', { method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-access-code': store.get('ct_code', '') },
+    body: JSON.stringify(payload) });
+  if (resp.status === 401 && !retried) {
+    const c = prompt('Enter your access code'); if (!c) { const e = new Error('auth'); e.code = 'auth'; throw e; }
+    store.set('ct_code', c); return callAnalyze(payload, true);
+  }
+  if (resp.status === 429) { const e = new Error('rate'); e.code = 'rate_limited'; throw e; }
+  if (!resp.ok) throw new Error('fail');
+  return resp.json();
+}
+
+function resizeImage(file, max = 900) {
+  return new Promise((resolve, reject) => {
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const s = Math.min(1, max / Math.max(img.width, img.height));
+      const w = Math.round(img.width * s), h = Math.round(img.height * s);
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? resolve({ blob: b, dataUrl: c.toDataURL('image/jpeg', .6) }) : reject(new Error('img')), 'image/jpeg', .75);
+    };
+    img.onerror = () => reject(new Error('img'));
+    img.src = url;
+  });
+}
+function thumb(dataUrl) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => { const c = document.createElement('canvas'); c.width = c.height = 120;
+      const s = Math.max(120 / img.width, 120 / img.height);
+      const w = img.width * s, h = img.height * s;
+      c.getContext('2d').drawImage(img, (120 - w) / 2, (120 - h) / 2, w, h); res(c.toDataURL('image/jpeg', .6)); };
+    img.onerror = () => res(null); img.src = dataUrl;
+  });
+}
+
+// ---------- sheet (add meal) ----------
+let sheet = null; // {stage:'pick'|'edit', img, blob, text, note, loading, error, draft}
+function openSheet() { sheet = { stage: 'pick', img: null, blob: null, text: '', loading: false, error: '', draft: null }; renderSheet(); }
+function closeSheet() { sheet = null; const el = $('#sheetRoot'); if (el) el.remove(); }
+
+function renderSheet() {
+  let root = $('#sheetRoot');
+  if (!root) { root = document.createElement('div'); root.id = 'sheetRoot'; document.body.appendChild(root); }
+  const s = sheet; if (!s) return;
+  let body = '';
+  if (s.stage === 'pick') {
+    body = `
+      ${s.img ? `<img class="preview" src="${s.img}" alt="Meal photo">` : ''}
+      ${sample && imagesOK ? `
+        <div class="grid3" style="grid-template-columns:1fr 1fr">
+          <button class="btn" id="cam">📷 Camera</button>
+          <button class="btn ghost" id="lib">🖼 Library</button>
+        </div>` : ''}
+      <label>${s.img ? 'Optional note (e.g. “2 rotis, homemade dal”)' : (sample ? 'Or describe your meal' : 'Meal name')}</label>
+      <textarea id="txt" rows="2" placeholder="e.g. chicken biryani, 1 plate">${esc(s.text)}</textarea>
+      ${s.error ? `<div class="err">${esc(s.error)}</div>` : ''}
+      ${sample ? `<div style="margin-top:12px"><button class="btn" id="go" ${s.loading ? 'disabled' : ''}>${s.loading ? '<span class="spin"></span> Analyzing…' : 'Analyze with AI'}</button></div>` : ''}
+      <div style="margin-top:10px"><button class="btn ghost" id="manual">Enter manually</button></div>
+      ${!sample ? '' : ''}`;
+  } else {
+    const d = s.draft;
+    const f = (id, label, v) => `<div><label>${label}</label><input id="${id}" type="number" inputmode="decimal" step="any" value="${v}"></div>`;
+    body = `
+      ${s.img ? `<img class="preview" src="${s.img}" alt="Meal photo">` : ''}
+      <label>Name</label><input id="d_name" value="${esc(d.name)}">
+      <div class="grid3" style="grid-template-columns:1fr 1fr">
+        ${f('d_cal', 'Calories', d.cal)}${f('d_p', 'Protein (g)', d.p)}
+        ${f('d_c', 'Carbs (g)', d.c)}${f('d_f', 'Fat (g)', d.f)}
+        ${f('d_fi', 'Fiber (g)', d.fi)}${f('d_su', 'Sugar (g)', d.su)}
+        ${f('d_so', 'Sodium (mg)', d.so)}
+      </div>
+      <div style="margin-top:14px"><button class="btn" id="saveMeal">Save to log</button></div>
+      <div style="margin-top:10px"><button class="btn ghost" id="back">Back</button></div>`;
+  }
+  root.innerHTML = `<div class="sheet-bg" id="bg"><div class="sheet" role="dialog" aria-label="Add meal">
+    <div class="row between"><h1 style="font-size:22px;margin:0 0 8px">Add meal</h1><button class="x" id="closeS" aria-label="Close">✕</button></div>${body}</div></div>`;
+
+  $('#closeS').onclick = closeSheet;
+  $('#bg').onclick = e => { if (e.target.id === 'bg') closeSheet(); };
+  const txt = $('#txt'); if (txt) txt.oninput = () => { s.text = txt.value; };
+  if (s.stage === 'pick') {
+    if ($('#cam')) $('#cam').onclick = () => $('#fileCam').click();
+    if ($('#lib')) $('#lib').onclick = () => $('#fileLib').click();
+    $('#manual').onclick = () => { s.draft = { name: s.text || '', cal: 0, p: 0, c: 0, f: 0, fi: 0, su: 0, so: 0 }; s.stage = 'edit'; renderSheet(); };
+    if ($('#go')) $('#go').onclick = analyze;
+  } else {
+    $('#back').onclick = () => { s.stage = 'pick'; renderSheet(); };
+    $('#saveMeal').onclick = saveMeal;
+  }
+}
+
+async function onFile(e) {
+  const file = e.target.files[0]; e.target.value = '';
+  if (!file || !sheet) return;
+  try {
+    const r = await resizeImage(file);
+    sheet.blob = r.blob; sheet.img = r.dataUrl; sheet.error = '';
+  } catch (err) { sheet.error = 'Couldn’t read that photo. Try another.'; }
+  renderSheet();
+}
+$('#fileCam').addEventListener('change', onFile);
+$('#fileLib').addEventListener('change', onFile);
+
+async function analyze() {
+  const s = sheet;
+  if (!s.blob && !s.text.trim()) { s.error = 'Add a photo or describe the meal first.'; renderSheet(); return; }
+  s.loading = true; s.error = ''; renderSheet();
+  try {
+    const image = s.blob ? await blobToBase64(s.blob) : null;
+    const { text } = await callAnalyze({ image, note: s.text.trim() });
+    const m = text.replace(/```json|```/g, '').match(/\{[\s\S]*\}/);
+    const j = JSON.parse(m[0]);
+    s.draft = { name: j.name || s.text || 'Meal', cal: Math.round(j.calories || 0), p: +(+j.protein_g || 0).toFixed(1),
+      c: +(+j.carbs_g || 0).toFixed(1), f: +(+j.fat_g || 0).toFixed(1), fi: +(+j.fiber_g || 0).toFixed(1),
+      su: +(+j.sugar_g || 0).toFixed(1), so: Math.round(+j.sodium_mg || 0) };
+    s.stage = 'edit';
+  } catch (err) {
+    s.error = err && err.code === 'auth' ? 'Access code needed. You can still log manually.'
+      : err && err.code === 'rate_limited' ? 'Too many requests. Wait a moment and try again.'
+      : 'Couldn’t analyze that. Try again or enter manually.';
+  }
+  s.loading = false; renderSheet();
+}
+
+async function saveMeal() {
+  const n = id => Number($('#' + id).value) || 0;
+  const entry = { id: Date.now() + Math.random().toString(36).slice(2, 6), ts: Date.now(),
+    name: $('#d_name').value.trim() || 'Meal', cal: Math.round(n('d_cal')), p: n('d_p'), c: n('d_c'), f: n('d_f'),
+    fi: n('d_fi'), su: n('d_su'), so: n('d_so'), img: sheet.img ? await thumb(sheet.img) : null };
+  state.entries.push(entry); save(); closeSheet(); render();
+}
+
+// ---------- views ----------
+function render() {
+  const app = $('#app');
+  if (!state.profile) { app.innerHTML = onboardingHTML(); bindOnboarding(); return; }
+  let main = '';
+  if (state.tab === 'today') main = todayHTML();
+  else if (state.tab === 'progress') main = progressHTML();
+  else main = settingsHTML();
+  app.innerHTML = main + `
+    ${state.tab === 'today' ? '<button class="fab" id="fab" aria-label="Add meal">+</button>' : ''}
+    <nav class="tabbar"><div class="inner">
+      ${[['today', '🔥', 'Today'], ['progress', '📊', 'Progress'], ['settings', '⚙️', 'Settings']].map(t =>
+        `<button class="tab ${state.tab === t[0] ? 'on' : ''}" data-tab="${t[0]}"><span>${t[1]}</span>${t[2]}</button>`).join('')}
+    </div></nav>`;
+  app.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { state.tab = b.dataset.tab; render(); window.scrollTo(0, 0); });
+  if ($('#fab')) $('#fab').onclick = openSheet;
+  app.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    state.entries = state.entries.filter(e => e.id !== b.dataset.del); save(); render(); });
+  if (state.tab === 'settings') bindSettings();
+}
+
+function todayHTML() {
+  const t = todays(), P = state.profile;
+  const eaten = sum(t, 'cal'), left = P.cal - eaten;
+  const R = 90, C = 2 * Math.PI * R, pct = Math.min(1, eaten / P.cal);
+  const macro = (name, v, g, col) => `<div class="card" style="margin:0;padding:12px;text-align:center">
+    <b style="font-size:17px">${Math.max(0, Math.round(g - v))}g</b><div class="muted">${name} left</div>${bar(v, g, col)}</div>`;
+  return `
+    <div class="row between"><h1>Today</h1><span class="pill">🔥 ${streak()}</span></div>
+    <div class="ring">
+      <svg viewBox="0 0 210 210" width="210" height="210" role="img" aria-label="${eaten} of ${P.cal} calories eaten">
+        <circle cx="105" cy="105" r="${R}" fill="none" stroke="var(--line)" stroke-width="16"/>
+        <circle cx="105" cy="105" r="${R}" fill="none" stroke="${left < 0 ? 'var(--red)' : 'var(--accent)'}" stroke-width="16" stroke-linecap="round"
+          stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct)}" transform="rotate(-90 105 105)" style="transition:stroke-dashoffset .5s"/>
+      </svg>
+      <div class="mid"><div class="big">${Math.abs(left)}</div><div class="muted">${left >= 0 ? 'kcal left' : 'kcal over'}</div></div>
+    </div>
+    <div class="grid3">${macro('Protein', sum(t, 'p'), P.p, 'var(--red)')}${macro('Carbs', sum(t, 'c'), P.c, 'var(--orange)')}${macro('Fat', sum(t, 'f'), P.f, 'var(--blue)')}</div>
+    <div class="muted" style="margin-top:10px;text-align:center">Fiber ${Math.round(sum(t, 'fi'))}g · Sugar ${Math.round(sum(t, 'su'))}g · Sodium ${Math.round(sum(t, 'so'))}mg</div>
+    <h2>Recently eaten</h2>
+    ${t.length ? t.slice().reverse().map(e => `
+      <div class="card meal">
+        ${e.img ? `<img class="thumb" src="${e.img}" alt="">` : '<div class="thumb">🍽</div>'}
+        <div class="info"><div class="name">${esc(e.name)}</div>
+          <div style="font-weight:700">${e.cal} kcal</div>
+          <div class="muted">P ${Math.round(e.p)}g · C ${Math.round(e.c)}g · F ${Math.round(e.f)}g</div></div>
+        <button class="x" data-del="${e.id}" aria-label="Delete ${esc(e.name)}">🗑</button>
+      </div>`).join('') : '<p class="muted" style="text-align:center;padding:24px 0">Tap + to log your first meal.</p>'}`;
+}
+
+function progressHTML() {
+  const P = state.profile, days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const k = dayKey(d), es = state.entries.filter(e => dayKey(e.ts) === k);
+    days.push({ label: d.toLocaleDateString(undefined, { weekday: 'short' }), cal: sum(es, 'cal'), p: sum(es, 'p') });
+  }
+  const max = Math.max(P.cal * 1.2, ...days.map(d => d.cal), 1), H = 180, W = 320, bw = 28, gap = (W - bw * 7) / 8;
+  const y = v => H - (v / max) * H;
+  const bars = days.map((d, i) => { const x = gap + i * (bw + gap);
+    return `<rect x="${x}" y="${y(d.cal)}" width="${bw}" height="${Math.max(0, H - y(d.cal))}" rx="6" fill="${d.cal > P.cal ? 'var(--red)' : 'var(--accent)'}"/>
+      <text x="${x + bw / 2}" y="${H + 16}" text-anchor="middle" font-size="11" fill="var(--muted)">${d.label}</text>`; }).join('');
+  const logged = days.filter(d => d.cal > 0);
+  const avg = logged.length ? Math.round(logged.reduce((a, d) => a + d.cal, 0) / logged.length) : 0;
+  return `<h1>Progress</h1>
+    <div class="card"><div class="muted" style="margin-bottom:8px">Calories, last 7 days</div>
+      <div class="chartwrap"><svg viewBox="0 0 ${W} ${H + 24}" width="100%" role="img" aria-label="Calories per day for the last 7 days">
+        <line x1="0" x2="${W}" y1="${y(P.cal)}" y2="${y(P.cal)}" stroke="var(--muted)" stroke-dasharray="4 4"/>${bars}</svg></div>
+      <div class="muted">Dashed line = your goal (${P.cal} kcal)</div></div>
+    <div class="grid3" style="grid-template-columns:1fr 1fr">
+      <div class="card"><div class="muted">Daily average</div><b style="font-size:22px">${avg}</b> kcal</div>
+      <div class="card"><div class="muted">Current streak</div><b style="font-size:22px">${streak()}</b> days</div>
+    </div>`;
+}
+
+function settingsHTML() {
+  const P = state.profile;
+  return `<h1>Settings</h1>
+    <div class="card"><b>Daily plan</b>
+      <div class="plan"><div>Calories<b>${P.cal}</b></div><div>Protein<b>${P.p}g</b></div><div>Carbs<b>${P.c}g</b></div><div>Fat<b>${P.f}g</b></div></div>
+      <label>Adjust calorie goal</label><input id="calGoal" type="number" inputmode="numeric" value="${P.cal}">
+    </div>
+    <div class="card"><label style="margin-top:0">Appearance</label>
+      <div class="seg" id="theme"><button data-t="auto">Auto</button><button data-t="light">Light</button><button data-t="dark">Dark</button></div></div>
+    <div class="card"><b>Backup</b>
+      <p class="muted">Your data lives on this device. Copy a backup now and then and keep it in Notes.</p>
+      <button class="btn ghost" id="bkCopy">Copy backup</button>
+      <label>Restore</label><textarea id="bkText" rows="3" placeholder="Paste backup here"></textarea>
+      <div style="height:8px"></div><button class="btn ghost" id="bkRestore">Restore from backup</button></div>
+    <button class="btn ghost" id="redo">Redo onboarding</button>
+    <div style="height:10px"></div>
+    <button class="btn danger" id="wipe">Delete all data</button>
+    <p class="muted">Data is stored only on this device. Estimates are not medical advice; consult a professional before changing your diet.</p>`;
+}
+function bindSettings() {
+  $('#calGoal').onchange = e => { const v = Math.max(800, Math.min(6000, +e.target.value || state.profile.cal)); state.profile.cal = v; save(); render(); };
+  const cur = store.get('ct_theme', 'auto');
+  document.querySelectorAll('#theme button').forEach(b => {
+    if (b.dataset.t === cur) b.classList.add('on');
+    b.onclick = () => { store.set('ct_theme', b.dataset.t); applyTheme(); render(); };
+  });
+  $('#bkCopy').onclick = async () => {
+    const t = JSON.stringify({ profile: state.profile, entries: state.entries });
+    try { await navigator.clipboard.writeText(t); alert('Backup copied. Paste it into Notes to keep it safe.'); }
+    catch (e) { $('#bkText').value = t; $('#bkText').select(); alert('Select and copy the text in the box.'); }
+  };
+  $('#bkRestore').onclick = () => {
+    try { const j = JSON.parse($('#bkText').value); if (!Array.isArray(j.entries)) throw new Error('bad');
+      state.entries = j.entries; if (j.profile) state.profile = j.profile; save(); render(); alert('Restored.'); }
+    catch (e) { alert('That doesn’t look like a valid backup.'); }
+  };
+  $('#redo').onclick = () => { state.profile = null; render(); };
+  $('#wipe').onclick = () => { if (confirm('Delete all meals and your plan?')) { state.entries = []; state.profile = null; save(); render(); } };
+}
+function applyTheme() {
+  const t = store.get('ct_theme', 'auto'), r = document.documentElement;
+  if (t === 'auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', t);
+}
+applyTheme();
+
+// ---------- onboarding ----------
+let ob = { isMale: true, age: 28, height: 170, weight: 70, activity: 'mid', goal: 'lose', plan: null };
+function onboardingHTML() {
+  const opt = (obj, cur) => Object.entries(obj).map(([k, v]) => `<option value="${k}" ${k === cur ? 'selected' : ''}>${v[0]}</option>`).join('');
+  return `<h1>Welcome 👋</h1><p class="muted" style="margin-top:-8px">Answer a few questions and we’ll build your daily plan.</p>
+    <div class="card">
+      <label style="margin-top:0">Sex</label>
+      <div class="seg" id="sex"><button data-v="1" class="${ob.isMale ? 'on' : ''}">Male</button><button data-v="0" class="${ob.isMale ? '' : 'on'}">Female</button></div>
+      <div class="grid3"><div><label>Age</label><input id="age" type="number" inputmode="numeric" value="${ob.age}"></div>
+        <div><label>Height cm</label><input id="height" type="number" inputmode="numeric" value="${ob.height}"></div>
+        <div><label>Weight kg</label><input id="weight" type="number" inputmode="numeric" value="${ob.weight}"></div></div>
+      <label>Activity</label><select id="activity">${opt(ACT, ob.activity)}</select>
+      <label>Goal</label><select id="goal">${opt(GOAL, ob.goal)}</select>
+    </div>
+    ${ob.plan ? `<div class="card"><b>Your daily plan</b><div class="plan"><div>Calories<b>${ob.plan.cal}</b></div><div>Protein<b>${ob.plan.p}g</b></div><div>Carbs<b>${ob.plan.c}g</b></div><div>Fat<b>${ob.plan.f}g</b></div></div></div>
+      <button class="btn" id="start">Start tracking</button>` : '<button class="btn" id="build">Build my plan</button>'}
+    <p class="muted">Estimates only, not medical advice.</p>`;
+}
+function bindOnboarding() {
+  const read = () => {
+    ob.age = Math.max(14, Math.min(90, +$('#age').value || 28));
+    ob.height = Math.max(120, Math.min(220, +$('#height').value || 170));
+    ob.weight = Math.max(35, Math.min(250, +$('#weight').value || 70));
+    ob.activity = $('#activity').value; ob.goal = $('#goal').value;
+  };
+  document.querySelectorAll('#sex button').forEach(b => b.onclick = () => { read(); ob.isMale = b.dataset.v === '1'; ob.plan = null; render(); });
+  ['age', 'height', 'weight', 'activity', 'goal'].forEach(id => $('#' + id).onchange = () => { read(); ob.plan = null; });
+  const build = $('#build'); if (build) build.onclick = () => { read(); ob.plan = makePlan(ob); render(); };
+  const start = $('#start'); if (start) start.onclick = () => {
+    read(); const p = makePlan(ob);
+    state.profile = { isMale: ob.isMale, age: ob.age, height: ob.height, weight: ob.weight, activity: ob.activity, goal: ob.goal, ...p };
+    save(); state.tab = 'today'; render(); };
+}
+
+render();
+// if localStorage was wiped, restore from the IndexedDB copy
+(async () => {
+  if (state.profile || state.entries.length) { idb.set('ct_all', { profile: state.profile, entries: state.entries }); return; }
+  const saved = await idb.get('ct_all');
+  if (saved && (saved.profile || (saved.entries && saved.entries.length))) {
+    state.profile = saved.profile || null; state.entries = saved.entries || []; save(); render();
+  }
+})();
+</script>
+</body>
+</html>
